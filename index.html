@@ -1,0 +1,2494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a1628">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Análisis de Factibilidad para tarifa</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-title" content="Factibilidad">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Instrument+Serif&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Paleta BBVA: fondo claro, azul marino corporativo */
+    --bg:#F4F6F8;          /* fondo de la app, gris muy claro */
+    --bg-2:#FFFFFF;        /* fondo alternativo más brillante */
+    --panel:#FFFFFF;       /* cards blancas */
+    --panel-2:#FAFBFD;     /* cards con leve tono */
+    --border:#E5E8EC;      /* bordes muy sutiles */
+    --border-2:#D4D8DE;    /* bordes un poco más visibles */
+    --ink:#1B2838;         /* texto principal casi negro */
+    --ink-dim:#4B5563;     /* texto secundario */
+    --ink-muted:#8B92A0;   /* labels, texto leve */
+    --accent:#004481;      /* AZUL BBVA corporativo */
+    --accent-2:#1973B8;    /* celeste BBVA secundario */
+    --blue:#1973B8;        /* mismo que accent-2 */
+    --good:#00A878;        /* verde profesional */
+    --warn:#D97706;        /* ámbar serio */
+    --danger:#DC2626;      /* rojo claro */
+    --shadow:0 1px 3px rgba(27,40,56,.05),0 1px 2px rgba(27,40,56,.04);
+    --shadow-md:0 4px 12px rgba(27,40,56,.06),0 2px 4px rgba(27,40,56,.04);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    min-height:100vh;
+    font-size:15px;
+    line-height:1.5;
+    padding-bottom:40px;
+    -webkit-font-smoothing:antialiased;
+  }
+  header{
+    padding:14px 16px 12px;
+    border-bottom:1px solid var(--border);
+    position:sticky; top:0;
+    background:rgba(255,255,255,.95);
+    backdrop-filter:blur(10px);
+    z-index:100;
+  }
+  .brand{
+    display:flex; align-items:center; gap:12px;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:17px;
+    color:var(--ink);
+    letter-spacing:-.01em;
+  }
+  .brand-mark{
+    width:32px;height:32px;
+    background:var(--accent);
+    border-radius:8px;
+    display:grid;place-items:center;
+    font-family:'Inter',sans-serif;
+    font-weight:700; color:#FFFFFF;
+    font-size:14px;
+    letter-spacing:-.02em;
+  }
+  .brand-sub{
+    font-family:'Inter',sans-serif;
+    font-size:11px; color:var(--ink-muted);
+    font-weight:500;
+    margin-top:2px;
+    letter-spacing:.02em;
+  }
+
+  nav.tabs{
+    display:flex; gap:0;
+    padding:0 12px;
+    overflow-x:auto; scrollbar-width:none;
+    border-bottom:1px solid var(--border);
+    background:#FFFFFF;
+    position:sticky; top:59px; z-index:90;
+  }
+  nav.tabs::-webkit-scrollbar{display:none}
+  nav.tabs button{
+    flex-shrink:0;
+    background:transparent; border:0;
+    color:var(--ink-muted);
+    font-family:'Inter',sans-serif;
+    font-size:13px; font-weight:500;
+    letter-spacing:0;
+    text-transform:none;
+    padding:14px 16px;
+    border-bottom:2px solid transparent;
+    cursor:pointer;
+    transition:all .2s;
+  }
+  nav.tabs button.active{
+    color:var(--accent);
+    border-bottom-color:var(--accent);
+    font-weight:600;
+  }
+
+  main{padding:18px 14px;max-width:720px;margin:0 auto}
+  section{display:none}
+  section.active{display:block;animation:fade .22s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px;
+    margin-bottom:12px;
+    box-shadow:var(--shadow);
+  }
+  .card-head{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:14px; padding-bottom:12px;
+    border-bottom:1px solid var(--border);
+  }
+  .card-title{
+    font-family:'Inter',sans-serif;
+    font-size:16px; font-weight:600;
+    color:var(--ink);
+    letter-spacing:-.01em;
+  }
+  .card-sub{
+    font-family:'Inter',sans-serif;
+    font-size:12px; font-weight:500;
+    color:var(--accent);
+  }
+
+  .field{
+    display:grid;
+    grid-template-columns:1fr auto;
+    align-items:center;
+    gap:10px;
+    padding:10px 0;
+    border-bottom:1px solid rgba(229,232,236,.7);
+  }
+  .field:last-child{border-bottom:0}
+  .field-label{font-size:13px;color:var(--ink-dim);line-height:1.3;font-weight:500}
+  .field-label .hint{
+    display:block;
+    font-family:'Inter',sans-serif;
+    font-size:11px;color:var(--ink-muted);
+    font-weight:400;
+    margin-top:2px;
+  }
+  .field-input{
+    display:flex; align-items:center;
+    background:#FFFFFF;
+    border:1px solid var(--border-2);
+    border-radius:8px;
+    padding:0 10px;
+    min-width:130px;
+    transition:border-color .15s;
+  }
+  .field-input:focus-within{
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(0,68,129,.08);
+  }
+  .field-input .prefix,.field-input .suffix{
+    font-family:'Inter',sans-serif;
+    font-size:12px; color:var(--ink-muted);
+    font-weight:500;
+  }
+  .field-input input,.field-input select{
+    background:transparent;border:0;
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    font-size:14px; font-weight:600;
+    width:100%; text-align:right;
+    padding:10px 6px;
+    outline:none;
+  }
+  .field-input select{
+    appearance:none;-webkit-appearance:none;
+    text-align:left;
+    cursor:pointer;
+  }
+
+  .out{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:10px 12px; margin:4px 0;
+    background:#F8F9FB;
+    border:1px solid var(--border);
+    border-radius:8px;
+  }
+  .out-label{font-size:12px;color:var(--ink-dim);font-weight:500}
+  .out-val{
+    font-family:'Inter',sans-serif;
+    font-size:14px; font-weight:600;
+    color:var(--ink);
+  }
+
+  /* Selector de modos (segmented control) */
+  .seg{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:3px;
+    background:#F0F2F5;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:3px;
+    margin-bottom:10px;
+  }
+  .seg button{
+    background:transparent;
+    border:0;
+    color:var(--ink-dim);
+    font-family:'Inter',sans-serif;
+    font-size:12px; font-weight:500;
+    padding:8px 4px;
+    border-radius:7px;
+    cursor:pointer;
+    transition:all .15s;
+  }
+  .seg button.active{
+    background:var(--accent);
+    color:#FFFFFF;
+    font-weight:600;
+    box-shadow:0 1px 2px rgba(0,68,129,.2);
+  }
+
+  /* ========== PANEL (pestaña principal) ========== */
+  .hero{
+    background:#FFFFFF;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:12px;
+    text-align:center;
+    box-shadow:var(--shadow-md);
+  }
+  .hero-label{
+    font-family:'Inter',sans-serif;
+    font-size:11px; color:var(--ink-muted);
+    font-weight:500;
+    letter-spacing:.04em; text-transform:uppercase;
+  }
+  .hero-value{
+    font-family:'Inter',sans-serif;
+    font-size:36px; line-height:1.1;
+    font-weight:700;
+    color:var(--accent);
+    margin:8px 0 4px;
+    letter-spacing:-.02em;
+  }
+  .hero-sub{
+    font-family:'Inter',sans-serif;
+    font-size:12px;color:var(--ink-muted);
+    font-weight:500;
+  }
+
+  .semaforo{
+    padding:18px 16px;
+    border-radius:12px;
+    text-align:center;
+    margin-bottom:12px;
+    border:1px solid;
+    box-shadow:var(--shadow);
+  }
+  .semaforo-titulo{
+    font-family:'Inter',sans-serif;
+    font-size:18px;
+    font-weight:700;
+    line-height:1.2;
+    margin-bottom:6px;
+    letter-spacing:-.01em;
+  }
+  .semaforo-detalle{
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    font-weight:500;
+    line-height:1.5;
+    opacity:.95;
+  }
+  .semaforo-hint{
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+    font-weight:500;
+    opacity:.75;
+    margin-top:4px;
+  }
+  .semaforo.ok{background:rgba(0,168,120,.08);border-color:rgba(0,168,120,.25);color:var(--good)}
+  .semaforo.warn{background:rgba(217,119,6,.08);border-color:rgba(217,119,6,.25);color:var(--warn)}
+  .semaforo.bad{background:rgba(220,38,38,.08);border-color:rgba(220,38,38,.25);color:var(--danger)}
+
+  .slider-wrap{
+    background:var(--bg-2);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px 14px;
+    margin:6px 0;
+    border-left-width:3px;
+  }
+  .slider-head{
+    display:flex;justify-content:space-between;align-items:baseline;
+    margin-bottom:4px;
+  }
+  .slider-name{
+    font-family:'Instrument Serif',serif;
+    font-size:15px;
+  }
+  .slider-val{
+    font-family:'JetBrains Mono',monospace;
+    font-weight:600;
+    font-size:14px;
+  }
+
+  input[type=range]{
+    width:100%;
+    -webkit-appearance:none;
+    appearance:none;
+    background:transparent;
+    margin:4px 0 0;
+  }
+  input[type=range]:disabled{ opacity:1; } /* que no se vea descolorado */
+  input[type=range]::-webkit-slider-runnable-track{
+    height:6px;
+    background:var(--border);
+    border-radius:3px;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:20px;height:20px;
+    background:var(--ink);
+    border:3px solid var(--accent);
+    border-radius:50%;
+    margin-top:-7px;
+    cursor:pointer;
+    box-shadow:0 2px 6px rgba(0,0,0,.4);
+  }
+  input[type=range]::-moz-range-track{
+    height:6px;
+    background:var(--border);
+    border-radius:3px;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:20px;height:20px;
+    background:var(--ink);
+    border:3px solid var(--accent);
+    border-radius:50%;
+    cursor:pointer;
+  }
+
+  .detalle-toggle{
+    width:100%;
+    padding:10px;
+    margin-top:4px;
+    background:transparent;
+    border:1px dashed var(--border);
+    color:var(--ink-dim);
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    border-radius:8px;
+    letter-spacing:.04em;
+    cursor:pointer;
+  }
+  .detalle-toggle:hover{color:var(--ink)}
+
+  /* Steppers de viajes */
+  .viaje-card{
+    background:#FFFFFF;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px;
+    margin:10px 0;
+    border-left-width:3px;
+    box-shadow:var(--shadow);
+  }
+  .viaje-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:12px;
+  }
+  .viaje-name{
+    font-family:'Inter',sans-serif;
+    font-size:16px;
+    font-weight:600;
+    letter-spacing:-.01em;
+  }
+  .viaje-tarifa{
+    font-family:'Inter',sans-serif;
+    font-size:11px;
+    font-weight:500;
+    padding:4px 10px;
+    border-radius:6px;
+    background:rgba(0,68,129,.08);
+    color:var(--accent);
+  }
+  .stepper{
+    display:grid;
+    grid-template-columns:44px 1fr 44px;
+    gap:8px;
+    align-items:center;
+    margin:10px 0;
+  }
+  .stepper button{
+    width:44px;
+    height:44px;
+    background:#F8F9FB;
+    border:1px solid var(--border-2);
+    color:var(--accent);
+    border-radius:8px;
+    font-family:'Inter',sans-serif;
+    font-size:22px;
+    font-weight:600;
+    cursor:pointer;
+    transition:all .15s;
+  }
+  .stepper button:hover{
+    background:#FFFFFF;
+    border-color:var(--accent);
+    color:var(--accent);
+    box-shadow:var(--shadow);
+  }
+  .stepper button:active{
+    transform:scale(0.96);
+  }
+  .stepper input{
+    width:100%;
+    height:44px;
+    background:#FFFFFF;
+    border:1px solid var(--border-2);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    font-size:20px;
+    font-weight:700;
+    text-align:center;
+    border-radius:8px;
+    outline:none;
+    transition:border-color .15s;
+  }
+  .stepper input:focus{
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(0,68,129,.08);
+  }
+  .viaje-info{
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    color:var(--ink-dim);
+    padding:8px 2px 2px;
+    line-height:1.6;
+  }
+  .viaje-info strong{
+    color:var(--ink-muted);
+    font-weight:500;
+  }
+  .viaje-info .pct-aporte{
+    color:var(--ink-muted);
+    font-size:11px;
+    margin-left:4px;
+    font-weight:500;
+  }
+  .viaje-suggest{
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+    font-weight:500;
+    margin-top:10px;
+    padding:10px 12px;
+    border-radius:8px;
+    background:rgba(25,115,184,.06);
+    border-left:3px solid var(--blue);
+    color:var(--ink-dim);
+    line-height:1.5;
+  }
+  .viaje-suggest.warn{
+    background:rgba(217,119,6,.06);
+    border-left-color:var(--warn);
+    color:var(--warn);
+  }
+
+  /* Ajuste compacto (ahora dentro del engranaje) */
+  .viaje-ajuste-compact{
+    display:flex;
+    gap:4px;
+    align-items:center;
+    justify-content:flex-end;
+  }
+  .viaje-ajuste-compact button{
+    width:32px; height:32px;
+    background:#F8F9FB;
+    border:1px solid var(--border-2);
+    color:var(--accent);
+    border-radius:6px;
+    font-family:'Inter',sans-serif;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    padding:0;
+    transition:all .15s;
+  }
+  .viaje-ajuste-compact button:hover{
+    background:#FFFFFF;
+    border-color:var(--accent);
+    box-shadow:var(--shadow);
+  }
+  .viaje-ajuste-compact .val{
+    min-width:48px;
+    height:32px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#FFFFFF;
+    border:1px solid var(--border-2);
+    border-radius:6px;
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    font-weight:700;
+    padding:0 8px;
+    color:var(--ink);
+  }
+  .viaje-ajuste-compact .val.pos{color:var(--good)}
+  .viaje-ajuste-compact .val.neg{color:var(--accent-2)}
+  .viaje-ajuste-compact .val.zero{color:var(--accent)}
+
+  .viaje-gear{
+    background:#F8F9FB;
+    border:1px solid var(--border-2);
+    color:var(--ink-muted);
+    width:30px;
+    height:30px;
+    border-radius:6px;
+    font-size:14px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
+    margin-left:8px;
+    transition:all .15s;
+  }
+  .viaje-gear:hover{
+    color:var(--accent);
+    border-color:var(--accent);
+    background:#FFFFFF;
+  }
+  .viaje-gear.active{
+    color:#FFFFFF;
+    border-color:var(--accent);
+    background:var(--accent);
+  }
+
+  .viaje-avanzado{
+    display:none;
+    margin-top:12px;
+    padding:12px;
+    background:#F8F9FB;
+    border:1px solid var(--border);
+    border-radius:8px;
+  }
+  .viaje-avanzado.open{display:block;animation:fade .2s ease}
+  .viaje-avanzado-row{
+    display:grid;
+    grid-template-columns:1fr 130px;
+    gap:10px;
+    align-items:center;
+    margin:8px 0;
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+    font-weight:500;
+  }
+  .viaje-avanzado-row label{
+    color:var(--ink-dim);
+  }
+  .viaje-avanzado-row input{
+    width:100%;
+    background:#FFFFFF;
+    border:1px solid var(--border-2);
+    color:var(--ink);
+    border-radius:6px;
+    padding:8px 10px;
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    font-weight:600;
+    text-align:right;
+    outline:none;
+    transition:border-color .15s;
+  }
+  .viaje-avanzado-row input:focus{
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(0,68,129,.08);
+  }
+
+  /* Totalizador año/mes/semana */
+  .totalizador{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:8px;
+    margin-top:16px;
+    padding-top:14px;
+    border-top:1px solid var(--border);
+  }
+
+  /* Ajuste de tarifa (signed stepper para viajes) */
+  .ajuste-tarifa{
+    display:grid;
+    grid-template-columns:44px 1fr 44px;
+    gap:8px;
+    align-items:center;
+    margin:4px 0 2px;
+  }
+  .ajuste-tarifa button{
+    width:44px; height:44px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    color:var(--ink);
+    border-radius:8px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:22px;
+    font-weight:700;
+    cursor:pointer;
+    transition:all .1s;
+  }
+  .ajuste-tarifa button:hover{
+    background:var(--panel-2);
+    border-color:var(--accent);
+    color:var(--accent);
+  }
+  .ajuste-tarifa button:active{ transform:scale(0.95); }
+  .ajuste-tarifa-value{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:8px;
+    height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'JetBrains Mono',monospace;
+    font-size:20px;
+    font-weight:700;
+    color:var(--ink);
+  }
+  .ajuste-tarifa-value.pos{color:var(--good)}
+  .ajuste-tarifa-value.neg{color:var(--accent-2)}
+  .ajuste-tarifa-value.zero{color:var(--accent)}
+  .ajuste-tarifa-help{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    color:var(--ink-muted);
+    margin-top:2px;
+    text-align:center;
+    letter-spacing:.04em;
+  }
+  .tot-col{
+    background:#F8F9FB;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px 6px;
+    text-align:center;
+  }
+  .tot-lbl{
+    font-family:'Inter',sans-serif;
+    font-size:10px;
+    color:var(--ink-muted);
+    font-weight:600;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  .tot-val{
+    font-family:'Inter',sans-serif;
+    font-size:24px;
+    font-weight:700;
+    line-height:1;
+    color:var(--accent);
+    margin:2px 0 2px;
+    letter-spacing:-.02em;
+  }
+  .tot-km{
+    font-family:'Inter',sans-serif;
+    font-size:11px;
+    color:var(--ink-dim);
+    font-weight:600;
+    margin-bottom:6px;
+  }
+  .tot-det{
+    font-family:'Inter',sans-serif;
+    font-size:11px;
+    color:var(--ink-muted);
+    font-weight:500;
+  }
+  .tot-det span{font-weight:600}
+
+  /* Resultado Panel: 2 cards grandes + semáforo */
+  .resultado-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:12px;
+  }
+  .resultado-card{
+    background:#FFFFFF;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px 12px;
+    text-align:center;
+    box-shadow:var(--shadow);
+  }
+  .resultado-card.necesario{
+    border-color:rgba(0,68,129,.2);
+    background:rgba(0,68,129,.02);
+  }
+  .resultado-card.neto{
+    border-color:rgba(0,168,120,.2);
+    background:rgba(0,168,120,.02);
+  }
+  .resultado-label{
+    font-family:'Inter',sans-serif;
+    font-size:10px;
+    color:var(--ink-muted);
+    font-weight:600;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  .resultado-value{
+    font-family:'Inter',sans-serif;
+    font-size:18px;
+    font-weight:700;
+    line-height:1.15;
+    word-break:break-word;
+    letter-spacing:-.01em;
+  }
+  .resultado-card.necesario .resultado-value{color:var(--accent)}
+  .resultado-card.neto .resultado-value{color:var(--good)}
+  .resultado-sub{
+    font-family:'Inter',sans-serif;
+    font-size:10px;
+    color:var(--ink-muted);
+    font-weight:500;
+    margin-top:6px;
+  }
+
+  /* ========== RESUMEN (estado de resultados) ========== */
+  .resumen-head{
+    background:#FFFFFF;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px 16px;
+    margin-bottom:12px;
+    box-shadow:var(--shadow);
+  }
+  .resumen-fact{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding:8px 0;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    font-weight:500;
+    border-bottom:1px solid var(--border);
+  }
+  .resumen-fact.total{
+    font-size:16px;
+    font-weight:700;
+    color:var(--accent);
+    border-bottom:0;
+    padding-top:12px;
+  }
+  .resumen-fact .lbl{color:var(--ink-dim);font-weight:500}
+
+  .resumen-grupo{
+    background:#FFFFFF;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px 16px;
+    margin-bottom:10px;
+    box-shadow:var(--shadow);
+  }
+  .resumen-grupo-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding-bottom:10px;
+    margin-bottom:8px;
+    border-bottom:1px solid var(--border);
+  }
+  .resumen-grupo-titulo{
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    font-weight:600;
+    letter-spacing:-.01em;
+  }
+  .resumen-grupo-total{
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    font-weight:700;
+  }
+  .resumen-grupo-pct{
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+    color:var(--ink-muted);
+    font-weight:500;
+    margin-left:8px;
+  }
+
+  .resumen-item{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:8px;
+    padding:6px 0;
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    font-weight:500;
+  }
+  .resumen-item .label{color:var(--ink-dim)}
+  .resumen-item .vals{
+    text-align:right;
+    color:var(--ink);
+    font-weight:600;
+  }
+  .resumen-item .vals .pct{
+    color:var(--ink-muted);
+    font-size:11px;
+    font-weight:500;
+    margin-left:6px;
+  }
+  .resumen-bar{
+    height:4px;
+    background:#E5E8EC;
+    border-radius:2px;
+    margin:4px 0 8px;
+    overflow:hidden;
+  }
+  .resumen-bar > div{
+    height:100%;
+    border-radius:2px;
+    transition:width .3s ease;
+  }
+  .resumen-bar.variables > div{background:var(--accent)}
+  .resumen-bar.fijos > div{background:var(--blue)}
+  .resumen-bar.financ > div{background:var(--ink-dim)}
+  .resumen-bar.renta > div{background:var(--good)}
+
+  .resumen-nota{
+    font-family:'Inter',sans-serif;
+    font-size:11px;
+    color:var(--ink-muted);
+    font-weight:500;
+    text-align:center;
+    padding:14px 0 4px;
+    line-height:1.6;
+  }
+
+  /* Bloque destacado: Costos por km */
+  .km-block{
+    background:#FFFFFF;
+    border:1px solid rgba(0,68,129,.2);
+    border-radius:12px;
+    padding:16px;
+    margin-bottom:12px;
+    box-shadow:var(--shadow-md);
+  }
+  .km-block-title{
+    font-family:'Inter',sans-serif;
+    font-size:11px;
+    color:var(--ink-muted);
+    font-weight:600;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    margin-bottom:10px;
+    text-align:center;
+  }
+  .km-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding:8px 0;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    font-weight:500;
+    border-bottom:1px solid rgba(229,232,236,.7);
+  }
+  .km-row:last-child{border-bottom:0}
+  .km-row .lbl{color:var(--ink-dim);font-size:13px}
+  .km-row .val{font-weight:700;color:var(--ink)}
+  .km-row.total{
+    padding-top:12px;
+    margin-top:6px;
+    border-top:1px solid var(--border);
+    border-bottom:0;
+    font-size:15px;
+  }
+  .km-row.total .lbl{color:var(--ink);font-weight:600}
+  .km-row.total .val{font-size:17px;color:var(--accent)}
+  .km-row.margen{
+    background:rgba(0,168,120,.06);
+    border-radius:8px;
+    padding:10px 12px;
+    margin-top:10px;
+  }
+  .km-row.margen.neg{background:rgba(220,38,38,.06)}
+  .km-row.margen .val{color:var(--good)}
+  .km-row.margen.neg .val{color:var(--danger)}
+  .km-explicacion{
+    font-family:'Inter',sans-serif;
+    font-size:11px;
+    color:var(--ink-muted);
+    font-weight:500;
+    padding-top:10px;
+    line-height:1.6;
+    text-align:center;
+  }
+
+  .grid-3{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:8px;
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+    margin-top:10px;
+  }
+  .grid-3 > div{
+    text-align:center;
+    padding:10px 4px;
+    background:#F8F9FB;
+    border:1px solid var(--border);
+    border-radius:8px;
+    font-weight:600;
+  }
+  .grid-3 .lbl{
+    color:var(--ink-muted);
+    font-size:10px;
+    font-weight:500;
+    letter-spacing:.02em;
+  }
+
+  .small-note{
+    font-family:'Inter',sans-serif;
+    font-size:11px; color:var(--ink-muted);
+    font-weight:500;
+    text-align:center;
+    padding:12px 0 4px;
+  }
+
+  .group-head{
+    font-family:'Inter',sans-serif;
+    font-size:11px; color:var(--ink-muted);
+    font-weight:600;
+    letter-spacing:.04em; text-transform:uppercase;
+    padding:14px 0 8px;
+    border-bottom:1px solid var(--border);
+    margin-bottom:6px;
+  }
+
+  .radio-row{
+    display:flex;
+    gap:6px;
+    margin-bottom:10px;
+  }
+  .radio-row button{
+    flex:1;
+    padding:10px 6px;
+    background:#F8F9FB;
+    border:1px solid var(--border-2);
+    color:var(--ink-dim);
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+    font-weight:500;
+    border-radius:8px;
+    cursor:pointer;
+    transition:all .15s;
+  }
+  .radio-row button.active{
+    border-color:var(--accent);
+    color:#FFFFFF;
+    background:var(--accent);
+    font-weight:600;
+    box-shadow:0 1px 2px rgba(0,68,129,.2);
+  }
+
+  /* Botón "volver a plan equilibrado" */
+  .detalle-toggle{
+    width:100%;
+    background:#F8F9FB;
+    border:1px solid var(--border-2);
+    color:var(--accent);
+    padding:10px;
+    border-radius:8px;
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    font-weight:500;
+    cursor:pointer;
+    transition:all .15s;
+  }
+  .detalle-toggle:hover{
+    background:#FFFFFF;
+    border-color:var(--accent);
+    box-shadow:var(--shadow);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-mark">$</div>
+    <div style="flex:1">
+      <div>Análisis de Factibilidad</div>
+      <div class="brand-sub">Tarifas &amp; Costos · Camión cerealero</div>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button class="active" data-tab="panel">Panel</button>
+  <button data-tab="costos">Costos</button>
+  <button data-tab="resumen">Resumen</button>
+</nav>
+
+<main>
+
+<!-- ===================== PANEL ===================== -->
+<section id="panel" class="active">
+
+  <!-- 3 bloques: Necesario | Neto | Semáforo -->
+  <div class="resultado-row">
+    <div class="resultado-card necesario">
+      <div class="resultado-label">Necesario /año</div>
+      <div class="resultado-value" id="rNecesario">$0</div>
+      <div class="resultado-sub">fijos + amort + renta</div>
+    </div>
+    <div class="resultado-card neto">
+      <div class="resultado-label">Neto del plan</div>
+      <div class="resultado-value" id="rNeto">$0</div>
+      <div class="resultado-sub">bruto − variables</div>
+    </div>
+  </div>
+
+  <div class="semaforo" id="semaforo">
+    <div class="semaforo-titulo" id="semTitulo">–</div>
+    <div class="semaforo-detalle" id="semDetalle"></div>
+    <div class="semaforo-hint" id="semHint"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Mix de viajes</div>
+      <div class="card-sub">
+        <span id="totalViajes">0</span> /año
+        <span style="opacity:.5">·</span>
+        <span id="totalKmHeader" style="color:var(--ink-dim)">0 km</span>
+      </div>
+    </div>
+
+    <p style="font-size:12px;color:var(--ink-muted);margin:0 0 12px">
+      Plan equilibrado al cambiar costos. Ajustá cada tipo con los botones para probar otros mixes.
+    </p>
+
+    <!-- Card Corto -->
+    <div class="viaje-card" style="border-left-color:var(--good)">
+      <div class="viaje-head">
+        <span class="viaje-name" style="color:var(--good)">Corto</span>
+        <span style="display:flex;align-items:center">
+          <span class="viaje-tarifa" id="tarA">CATAC full</span>
+          <button type="button" class="viaje-gear" data-gear="A" title="Parámetros avanzados">⚙</button>
+        </span>
+      </div>
+      <div class="stepper">
+        <button type="button" data-tipo="a" data-dir="-1">−</button>
+        <input type="number" id="countA" min="0" max="400" value="0">
+        <button type="button" data-tipo="a" data-dir="+1">+</button>
+      </div>
+      <div class="viaje-avanzado" id="avA">
+        <div class="viaje-avanzado-row">
+          <label>Distancia ida (km)</label>
+          <input type="number" id="kmA" step="10">
+        </div>
+        <div class="viaje-avanzado-row">
+          <label>Retorno vacío (%)</label>
+          <input type="number" id="retornoA" step="10">
+        </div>
+        <div class="viaje-avanzado-row" style="border-top:1px dashed rgba(0,0,0,.08);margin-top:4px;padding-top:8px">
+          <label>Ajuste %CATAC</label>
+          <span class="viaje-ajuste-compact">
+            <button type="button" data-ajuste="A" data-dir="-1">−</button>
+            <div class="val" id="ajA">+0</div>
+            <button type="button" data-ajuste="A" data-dir="+1">+</button>
+          </span>
+        </div>
+        <div class="viaje-avanzado-row">
+          <label>Tarifa ajustada</label>
+          <div style="text-align:right;color:var(--good);font-weight:700;font-size:13px"><span id="tarAjA">$0</span> /tn</div>
+        </div>
+        <div class="viaje-avanzado-row">
+          <label style="font-size:10px">Km totales (ida+vuelta)</label>
+          <div style="text-align:right;color:var(--ink-dim);font-size:12px"><span id="kmTotA">0</span> km</div>
+        </div>
+      </div>
+      <div class="viaje-info">
+        <strong>Cada viaje te deja</strong> <span id="netoA" style="color:var(--good);font-weight:700">$0</span> limpios<br>
+        <strong>Aporte total:</strong> <span id="aporteA">$0</span> <span class="pct-aporte" id="aportePctA">(0%)</span>
+      </div>
+      <div class="viaje-suggest" id="sugA"></div>
+      <input type="hidden" id="pctA">
+      <input type="hidden" id="ajAhelp">
+    </div>
+
+    <!-- Card Salida de planta -->
+    <div class="viaje-card" style="border-left-color:var(--accent-2)">
+      <div class="viaje-head">
+        <span class="viaje-name" style="color:var(--accent-2)">Salida de planta</span>
+        <span style="display:flex;align-items:center">
+          <span class="viaje-tarifa" id="tarB" style="background:rgba(255,140,66,.12);color:var(--accent-2)">CATAC -27%</span>
+          <button type="button" class="viaje-gear" data-gear="B" title="Parámetros avanzados">⚙</button>
+        </span>
+      </div>
+      <div class="stepper">
+        <button type="button" data-tipo="b" data-dir="-1">−</button>
+        <input type="number" id="countB" min="0" max="400" value="0">
+        <button type="button" data-tipo="b" data-dir="+1">+</button>
+      </div>
+      <div class="viaje-avanzado" id="avB">
+        <div class="viaje-avanzado-row">
+          <label>Distancia ida (km)</label>
+          <input type="number" id="kmB" step="10">
+        </div>
+        <div class="viaje-avanzado-row">
+          <label>Retorno vacío (%)</label>
+          <input type="number" id="retornoB" step="10">
+        </div>
+        <div class="viaje-avanzado-row" style="border-top:1px dashed rgba(0,0,0,.08);margin-top:4px;padding-top:8px">
+          <label>Ajuste %CATAC</label>
+          <span class="viaje-ajuste-compact">
+            <button type="button" data-ajuste="B" data-dir="-1">−</button>
+            <div class="val" id="ajB">+0</div>
+            <button type="button" data-ajuste="B" data-dir="+1">+</button>
+          </span>
+        </div>
+        <div class="viaje-avanzado-row">
+          <label>Tarifa ajustada</label>
+          <div style="text-align:right;color:var(--accent-2);font-weight:700;font-size:13px"><span id="tarAjB">$0</span> /tn</div>
+        </div>
+        <div class="viaje-avanzado-row">
+          <label style="font-size:10px">Km totales (ida+vuelta)</label>
+          <div style="text-align:right;color:var(--ink-dim);font-size:12px"><span id="kmTotB">0</span> km</div>
+        </div>
+      </div>
+      <div class="viaje-info">
+        <strong>Cada viaje te deja</strong> <span id="netoB" style="color:var(--accent-2);font-weight:700">$0</span> limpios<br>
+        <strong>Aporte total:</strong> <span id="aporteB">$0</span> <span class="pct-aporte" id="aportePctB">(0%)</span>
+      </div>
+      <div class="viaje-suggest" id="sugB"></div>
+      <input type="hidden" id="pctB">
+      <input type="hidden" id="ajBhelp">
+    </div>
+
+    <!-- Card Directo -->
+    <div class="viaje-card" style="border-left-color:var(--blue)">
+      <div class="viaje-head">
+        <span class="viaje-name" style="color:var(--blue)">Directo</span>
+        <span style="display:flex;align-items:center">
+          <span class="viaje-tarifa" id="tarC" style="background:rgba(96,165,250,.12);color:var(--blue)">CATAC -15%</span>
+          <button type="button" class="viaje-gear" data-gear="C" title="Parámetros avanzados">⚙</button>
+        </span>
+      </div>
+      <div class="stepper">
+        <button type="button" data-tipo="c" data-dir="-1">−</button>
+        <input type="number" id="countC" min="0" max="400" value="0">
+        <button type="button" data-tipo="c" data-dir="+1">+</button>
+      </div>
+      <div class="viaje-avanzado" id="avC">
+        <div class="viaje-avanzado-row">
+          <label>Distancia ida (km)</label>
+          <input type="number" id="kmC" step="10">
+        </div>
+        <div class="viaje-avanzado-row">
+          <label>Retorno vacío (%)</label>
+          <input type="number" id="retornoC" step="10">
+        </div>
+        <div class="viaje-avanzado-row" style="border-top:1px dashed rgba(0,0,0,.08);margin-top:4px;padding-top:8px">
+          <label>Ajuste %CATAC</label>
+          <span class="viaje-ajuste-compact">
+            <button type="button" data-ajuste="C" data-dir="-1">−</button>
+            <div class="val" id="ajC">+0</div>
+            <button type="button" data-ajuste="C" data-dir="+1">+</button>
+          </span>
+        </div>
+        <div class="viaje-avanzado-row">
+          <label>Tarifa ajustada</label>
+          <div style="text-align:right;color:var(--blue);font-weight:700;font-size:13px"><span id="tarAjC">$0</span> /tn</div>
+        </div>
+        <div class="viaje-avanzado-row">
+          <label style="font-size:10px">Km totales (ida+vuelta)</label>
+          <div style="text-align:right;color:var(--ink-dim);font-size:12px"><span id="kmTotC">0</span> km</div>
+        </div>
+      </div>
+      <div class="viaje-info">
+        <strong>Cada viaje te deja</strong> <span id="netoC" style="color:var(--blue);font-weight:700">$0</span> limpios<br>
+        <strong>Aporte total:</strong> <span id="aporteC">$0</span> <span class="pct-aporte" id="aportePctC">(0%)</span>
+      </div>
+      <div class="viaje-suggest" id="sugC"></div>
+      <input type="hidden" id="pctC">
+      <input type="hidden" id="ajChelp">
+    </div>
+
+    <!-- Totalizador -->
+    <div class="totalizador">
+      <div class="tot-col">
+        <div class="tot-lbl">POR AÑO</div>
+        <div class="tot-val" id="totAnio">0</div>
+        <div class="tot-km" id="totKmAnio">0 km</div>
+        <div class="tot-det">
+          <span style="color:var(--good)" id="totAanio">0</span> +
+          <span style="color:var(--accent-2)" id="totBanio">0</span> +
+          <span style="color:var(--blue)" id="totCanio">0</span>
+        </div>
+      </div>
+      <div class="tot-col">
+        <div class="tot-lbl">POR MES</div>
+        <div class="tot-val" id="totMes">0</div>
+        <div class="tot-km" id="totKmMes">0 km</div>
+        <div class="tot-det">
+          <span style="color:var(--good)" id="totAmes">0</span> +
+          <span style="color:var(--accent-2)" id="totBmes">0</span> +
+          <span style="color:var(--blue)" id="totCmes">0</span>
+        </div>
+      </div>
+      <div class="tot-col">
+        <div class="tot-lbl">POR SEMANA</div>
+        <div class="tot-val" id="totSem">0</div>
+        <div class="tot-km" id="totKmSem">0 km</div>
+        <div class="tot-det">
+          <span style="color:var(--good)" id="totAsem">0</span> +
+          <span style="color:var(--accent-2)" id="totBsem">0</span> +
+          <span style="color:var(--blue)" id="totCsem">0</span>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" id="btnReset" class="detalle-toggle" style="margin-top:10px">
+      ↻ Volver al plan equilibrado
+    </button>
+  </div>
+
+</section>
+
+
+<!-- ===================== COSTOS ===================== -->
+<section id="costos">
+
+  <div class="card">
+    <div class="card-head"><div class="card-title">Capacidad del camión</div></div>
+    <div class="field">
+      <div class="field-label">Toneladas por viaje<span class="hint">capacidad útil de carga</span></div>
+      <div class="field-input"><input type="number" id="toneladas" step="0.5"><span class="suffix">tn</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><div class="card-title">Inversión y renta</div></div>
+    <div class="field">
+      <div class="field-label">Capital invertido<span class="hint">valor total camión + acoplado</span></div>
+      <div class="field-input"><span class="prefix">$</span><input type="number" id="capital" step="1000000"></div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tipo de cambio<span class="hint">ARS por USD</span></div>
+      <div class="field-input"><span class="prefix">$</span><input type="number" id="tc" step="10"><span class="suffix">/USD</span></div>
+    </div>
+    <div class="field">
+      <div class="field-label">Rentabilidad objetivo<span class="hint">% anual USD sobre capital propio</span></div>
+      <div class="field-input"><input type="number" id="renta" step="1"><span class="suffix">%</span></div>
+    </div>
+    <div class="out">
+      <span class="out-label">Capital total en USD</span>
+      <span class="out-val" id="oCapUSD">US$ 0</span>
+    </div>
+    <div class="out" id="rowCapPropio" style="display:none;background:rgba(96,165,250,.08);border-color:rgba(96,165,250,.3)">
+      <span class="out-label" style="color:var(--blue)">Capital propio<br><span style="font-size:10px;color:var(--ink-muted);font-weight:400">capital total − crédito</span></span>
+      <span class="out-val" id="oCapPropio" style="color:var(--blue)">US$ 0</span>
+    </div>
+    <div class="out" style="background:rgba(244,185,66,.08);border-color:rgba(244,185,66,.3)">
+      <span class="out-label" style="color:var(--accent)">Renta objetivo anual<br><span style="font-size:10px;color:var(--ink-muted);font-weight:400" id="oRentaDet">sobre capital total</span></span>
+      <span class="out-val" id="oRentaAnio" style="color:var(--accent)">$ 0</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><div class="card-title">Crédito</div></div>
+    <div class="radio-row" id="credModo">
+      <button data-mode="none" class="active">Sin crédito</button>
+      <button data-mode="ars">En pesos</button>
+      <button data-mode="usd">En dólares</button>
+    </div>
+    <div id="credFields" style="display:none">
+      <div class="field">
+        <div class="field-label">Monto financiado</div>
+        <div class="field-input">
+          <span class="prefix" id="credPrefix">$</span>
+          <input type="number" id="creditoMonto" step="10000">
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label">Tasa de interés<span class="hint">nominal anual</span></div>
+        <div class="field-input"><input type="number" id="creditoTasa" step="1"><span class="suffix">%</span></div>
+      </div>
+      <div class="field">
+        <div class="field-label">Plazo</div>
+        <div class="field-input"><input type="number" id="creditoPlazo" step="1"><span class="suffix">años</span></div>
+      </div>
+      <div class="out">
+        <span class="out-label">Cuota mensual</span>
+        <span class="out-val" id="oCuotaMes">$0</span>
+      </div>
+      <div class="out" style="background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.3)">
+        <span class="out-label" style="color:var(--danger)">Cuota anual (en ARS)</span>
+        <span class="out-val" id="oCuotaAnual" style="color:var(--danger)">$0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Variables -->
+  <div class="card">
+    <div class="card-head"><div class="card-title">Costos variables</div><div class="card-sub" id="sumVar">$0/km</div></div>
+    <p style="font-size:12px;color:var(--ink-muted);margin:0 0 10px">Todo lo que depende de los km recorridos.</p>
+
+    <div class="group-head">Combustible</div>
+    <div class="field">
+      <div class="field-label">Precio del gasoil<span class="hint">grado 2 · YPF interior</span></div>
+      <div class="field-input"><span class="prefix">$</span><input type="number" id="precioGasoil" step="10"><span class="suffix">/lt</span></div>
+    </div>
+    <div class="field">
+      <div class="field-label">Rendimiento<span class="hint">km por litro</span></div>
+      <div class="field-input"><input type="number" id="kmLitro" step="0.1"><span class="suffix">km/lt</span></div>
+    </div>
+    <div class="out" style="background:rgba(96,165,250,.08);border-color:rgba(96,165,250,.3)">
+      <span class="out-label" style="color:var(--blue)">→ Combustible</span>
+      <span class="out-val" id="oCombKm" style="color:var(--blue)">$0 /km</span>
+    </div>
+
+    <div class="group-head">Lubricantes</div>
+    <div class="field">
+      <div class="field-label">Costo de cada servicio<span class="hint">aceite + filtros + MO</span></div>
+      <div class="field-input"><span class="prefix">$</span><input type="number" id="costoServicio" step="100000"></div>
+    </div>
+    <div class="field">
+      <div class="field-label">Km entre servicios</div>
+      <div class="field-input"><input type="number" id="kmServicio" step="5000"><span class="suffix">km</span></div>
+    </div>
+    <div class="out" style="background:rgba(96,165,250,.08);border-color:rgba(96,165,250,.3)">
+      <span class="out-label" style="color:var(--blue)">→ Lubricantes</span>
+      <span class="out-val" id="oLubKm" style="color:var(--blue)">$0 /km</span>
+    </div>
+
+    <div class="group-head">Neumáticos</div>
+    <div class="field">
+      <div class="field-label">Direccionales<span class="hint">2 del eje delantero</span></div>
+      <div class="field-input"><span class="prefix">$</span><input type="number" id="neumDir" step="100000"></div>
+    </div>
+    <div class="field">
+      <div class="field-label">Traccionales + acoplado<span class="hint">20 cubiertas</span></div>
+      <div class="field-input"><span class="prefix">$</span><input type="number" id="neumTrac" step="100000"></div>
+    </div>
+    <div class="field">
+      <div class="field-label">Vida útil<span class="hint">km que dura un juego</span></div>
+      <div class="field-input"><input type="number" id="vidaGoma" step="5000"><span class="suffix">km</span></div>
+    </div>
+    <div class="out" style="background:rgba(96,165,250,.08);border-color:rgba(96,165,250,.3)">
+      <span class="out-label" style="color:var(--blue)">→ Neumáticos</span>
+      <span class="out-val" id="oNeumKm" style="color:var(--blue)">$0 /km</span>
+    </div>
+
+    <div class="group-head">Reparaciones + peajes</div>
+    <div class="field">
+      <div class="field-label">Reparaciones anuales<span class="hint">imprevistos + mantenimiento</span></div>
+      <div class="field-input"><span class="prefix">$</span><input type="number" id="reparaciones" step="500000"></div>
+    </div>
+    <div class="field">
+      <div class="field-label">Peajes anuales</div>
+      <div class="field-input"><span class="prefix">$</span><input type="number" id="peajes" step="100000"></div>
+    </div>
+    <div class="field">
+      <div class="field-label">Alojamiento anual<span class="hint">viajes largos</span></div>
+      <div class="field-input"><span class="prefix">$</span><input type="number" id="alojamiento" step="100000"></div>
+    </div>
+    <div class="field">
+      <div class="field-label">Teléfono / GPS anual</div>
+      <div class="field-input"><span class="prefix">$</span><input type="number" id="telefono" step="50000"></div>
+    </div>
+    <div class="out" style="background:rgba(96,165,250,.08);border-color:rgba(96,165,250,.3)">
+      <span class="out-label" style="color:var(--blue)">→ Rep + peajes + otros</span>
+      <span class="out-val" id="oRepKm" style="color:var(--blue)">$0 /km</span>
+    </div>
+
+    <div class="out" style="background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.3);margin-top:10px;border-width:2px">
+      <span class="out-label" style="color:var(--good);font-weight:600">Total variable / km</span>
+      <span class="out-val" id="oVarKm" style="color:var(--good);font-size:16px">$0 /km</span>
+    </div>
+  </div>
+
+  <!-- PERSONAL -->
+  <div class="card">
+    <div class="card-head"><div class="card-title">Personal</div><div class="card-sub" id="sumPers">$0/año</div></div>
+    <p style="font-size:12px;color:var(--ink-muted);margin:0 0 10px">Los montos mensuales se multiplican × 13 sueldos.</p>
+
+    <div class="group-head">Chofer</div>
+    <div class="radio-row" id="choferModo">
+      <button data-mode="fijo" class="active">Fijo</button>
+      <button data-mode="pct">% sobre ingreso</button>
+      <button data-mode="mix">Mix</button>
+    </div>
+
+    <div id="choferFijoBox">
+      <div class="field">
+        <div class="field-label">Sueldo mensual fijo<span class="hint">neto + cargas patronales</span></div>
+        <div class="field-input"><span class="prefix">$</span><input type="number" id="choferFijo" step="50000"></div>
+      </div>
+    </div>
+
+    <div id="choferPctBox" style="display:none">
+      <div class="field">
+        <div class="field-label">% sobre ingreso bruto mensual<span class="hint">comisión del chofer</span></div>
+        <div class="field-input"><input type="number" id="choferPct" step="0.5"><span class="suffix">%</span></div>
+      </div>
+    </div>
+
+    <div id="choferMixBox" style="display:none">
+      <div class="field">
+        <div class="field-label">Fijo mensual</div>
+        <div class="field-input"><span class="prefix">$</span><input type="number" id="choferMixFijo" step="50000"></div>
+      </div>
+      <div class="field">
+        <div class="field-label">+ % sobre ingreso</div>
+        <div class="field-input"><input type="number" id="choferMixPct" step="0.5"><span class="suffix">%</span></div>
+      </div>
+    </div>
+
+    <div class="out" style="background:rgba(244,185,66,.08);border-color:rgba(244,185,66,.3)">
+      <span class="out-label" style="color:var(--accent)">Chofer mensual</span>
+      <span class="out-val" id="oChoferMes" style="color:var(--accent)">$0</span>
+    </div>
+    <div class="out">
+      <span class="out-label">Chofer anual (× 13)</span>
+      <span class="out-val" id="oChoferAnio">$0</span>
+    </div>
+
+    <div class="group-head">Admin/Gestión</div>
+    <div class="field">
+      <div class="field-label">Sueldo admin mensual<span class="hint">contador, gestión, etc.</span></div>
+      <div class="field-input"><span class="prefix">$</span><input type="number" id="adminFijo" step="50000"></div>
+    </div>
+    <div class="out">
+      <span class="out-label">Admin anual (× 13)</span>
+      <span class="out-val" id="oAdminAnio">$0</span>
+    </div>
+
+    <div class="out" style="background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.3);margin-top:10px;border-width:2px">
+      <span class="out-label" style="color:var(--good);font-weight:600">Total personal anual</span>
+      <span class="out-val" id="oPersAnio" style="color:var(--good);font-size:16px">$0</span>
+    </div>
+  </div>
+
+  <!-- Otros fijos -->
+  <div class="card">
+    <div class="card-head"><div class="card-title">Seguros e impuestos</div><div class="card-sub" id="sumFij">$0/año</div></div>
+    <div class="field">
+      <div class="field-label">Seguros anuales<span class="hint">chasis + acoplado</span></div>
+      <div class="field-input"><span class="prefix">$</span><input type="number" id="seguro" step="500000"></div>
+    </div>
+    <div class="field">
+      <div class="field-label">Patentes anuales</div>
+      <div class="field-input"><span class="prefix">$</span><input type="number" id="patente" step="500000"></div>
+    </div>
+    <div class="field">
+      <div class="field-label">VTV + otros anuales</div>
+      <div class="field-input"><span class="prefix">$</span><input type="number" id="vtv" step="10000"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><div class="card-title">Amortización</div></div>
+    <p style="font-size:12px;color:var(--ink-muted);margin:0 0 10px">Por reposición: cuánto tenés que guardar anualmente para reemplazar el camión al año X. Se calcula sobre el valor <strong>total</strong> del activo (estándar contable).</p>
+    <div class="field">
+      <div class="field-label">Valor residual<span class="hint">al final de la vida útil, en pesos hoy</span></div>
+      <div class="field-input"><span class="prefix">$</span><input type="number" id="residual" step="1000000"></div>
+    </div>
+    <div class="field">
+      <div class="field-label">Vida útil</div>
+      <div class="field-input"><input type="number" id="vidaUtil" step="1"><span class="suffix">años</span></div>
+    </div>
+    <div class="field">
+      <div class="field-label">Inflación USD anual<span class="hint">cuánto sube/año el precio del camión 0km en dólares</span></div>
+      <div class="field-input"><input type="number" id="inflaUSD" step="0.5"><span class="suffix">% USD</span></div>
+    </div>
+    <div class="out" style="background:rgba(96,165,250,.08);border-color:rgba(96,165,250,.3)">
+      <span class="out-label" style="color:var(--blue)">Valor reposición al año X<br><span style="font-size:10px;color:var(--ink-muted);font-weight:400" id="oReposDet">con 3% USD anual</span></span>
+      <span class="out-val" id="oRepos" style="color:var(--blue)">$0</span>
+    </div>
+    <div class="out">
+      <span class="out-label">Amortización anual<br><span style="font-size:10px;color:var(--ink-muted);font-weight:400">para reemplazar al año X</span></span>
+      <span class="out-val" id="oAmort">$0</span>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===================== VIAJES (eliminado: contenido movido al Panel) ===================== -->
+
+
+<!-- ===================== RESUMEN (estado de resultados) ===================== -->
+<section id="resumen">
+
+  <!-- Bloque destacado: Costos por km -->
+  <div class="km-block">
+    <div class="km-block-title">📏 Costos por km</div>
+    <div class="km-row">
+      <span class="lbl">Costo variable<br><span style="font-size:10px;color:var(--ink-muted)">gasoil + gomas + lubric + reparac</span></span>
+      <span class="val" id="kmVar">$0 /km</span>
+    </div>
+    <div class="km-row total">
+      <span class="lbl">Costo TOTAL<br><span style="font-size:10px;color:var(--ink-muted)">variables + fijos + amort + cuota + renta</span></span>
+      <span class="val" id="kmTotal">$0 /km</span>
+    </div>
+    <div class="km-row">
+      <span class="lbl">Ingreso promedio<br><span style="font-size:10px;color:var(--ink-muted)">facturación / km del plan</span></span>
+      <span class="val" id="kmIngreso">$0 /km</span>
+    </div>
+    <div class="km-row margen" id="kmMargenRow">
+      <span class="lbl" style="color:var(--ink)">Margen por km<br><span style="font-size:10px;color:var(--ink-muted)" id="kmMargenPct">0%</span></span>
+      <span class="val" id="kmMargen">$0 /km</span>
+    </div>
+    <div class="km-explicacion" id="kmExplicacion">&nbsp;</div>
+  </div>
+
+  <div class="resumen-head">
+    <div class="resumen-fact total">
+      <span class="lbl">Facturación bruta</span>
+      <span id="sFacturacion">$0</span>
+    </div>
+    <div class="resumen-fact">
+      <span class="lbl">Km totales del plan</span>
+      <span id="sKmPlan">0 km</span>
+    </div>
+    <div class="resumen-fact">
+      <span class="lbl">Total viajes /año</span>
+      <span id="sTotalViajes">0</span>
+    </div>
+  </div>
+
+  <!-- Costos variables -->
+  <div class="resumen-grupo">
+    <div class="resumen-grupo-head">
+      <span class="resumen-grupo-titulo" style="color:var(--accent-2)">Costos variables</span>
+      <span class="resumen-grupo-total">
+        <span id="sVarTotal">$0</span>
+        <span class="resumen-grupo-pct" id="sVarPct">0%</span>
+      </span>
+    </div>
+    <div class="resumen-bar variables"><div id="sVarBar" style="width:0%"></div></div>
+    <div class="resumen-item">
+      <span class="label">Combustible</span>
+      <span class="vals"><span id="sComb">$0</span><span class="pct" id="sCombPct">0%</span></span>
+    </div>
+    <div class="resumen-item">
+      <span class="label">Neumáticos</span>
+      <span class="vals"><span id="sNeum">$0</span><span class="pct" id="sNeumPct">0%</span></span>
+    </div>
+    <div class="resumen-item">
+      <span class="label">Lubricantes</span>
+      <span class="vals"><span id="sLub">$0</span><span class="pct" id="sLubPct">0%</span></span>
+    </div>
+    <div class="resumen-item">
+      <span class="label">Reparaciones + peajes</span>
+      <span class="vals"><span id="sRep">$0</span><span class="pct" id="sRepPct">0%</span></span>
+    </div>
+  </div>
+
+  <!-- Costos fijos -->
+  <div class="resumen-grupo">
+    <div class="resumen-grupo-head">
+      <span class="resumen-grupo-titulo" style="color:var(--blue)">Costos fijos</span>
+      <span class="resumen-grupo-total">
+        <span id="sFijTotal">$0</span>
+        <span class="resumen-grupo-pct" id="sFijPct">0%</span>
+      </span>
+    </div>
+    <div class="resumen-bar fijos"><div id="sFijBar" style="width:0%"></div></div>
+    <div class="resumen-item">
+      <span class="label">Chofer (× 13)</span>
+      <span class="vals"><span id="sChofer">$0</span><span class="pct" id="sChoferPct">0%</span></span>
+    </div>
+    <div class="resumen-item">
+      <span class="label">Admin (× 13)</span>
+      <span class="vals"><span id="sAdmin">$0</span><span class="pct" id="sAdminPct">0%</span></span>
+    </div>
+    <div class="resumen-item">
+      <span class="label">Seguros</span>
+      <span class="vals"><span id="sSeg">$0</span><span class="pct" id="sSegPct">0%</span></span>
+    </div>
+    <div class="resumen-item">
+      <span class="label">Patentes + VTV</span>
+      <span class="vals"><span id="sImp">$0</span><span class="pct" id="sImpPct">0%</span></span>
+    </div>
+  </div>
+
+  <!-- Recupero de capital -->
+  <div class="resumen-grupo">
+    <div class="resumen-grupo-head">
+      <span class="resumen-grupo-titulo" style="color:var(--ink-dim)">Recupero de capital</span>
+      <span class="resumen-grupo-total">
+        <span id="sRecTotal">$0</span>
+        <span class="resumen-grupo-pct" id="sRecPct">0%</span>
+      </span>
+    </div>
+    <div class="resumen-bar financ"><div id="sRecBar" style="width:0%"></div></div>
+    <div class="resumen-item">
+      <span class="label">Amortización</span>
+      <span class="vals"><span id="sAmort">$0</span><span class="pct" id="sAmortPct">0%</span></span>
+    </div>
+    <div class="resumen-item">
+      <span class="label">Cuota crédito</span>
+      <span class="vals"><span id="sCred">$0</span><span class="pct" id="sCredPct">0%</span></span>
+    </div>
+  </div>
+
+  <!-- Utilidad -->
+  <div class="resumen-grupo" style="border-color:rgba(74,222,128,.3);background:linear-gradient(135deg,var(--panel),rgba(74,222,128,.03))">
+    <div class="resumen-grupo-head">
+      <span class="resumen-grupo-titulo" style="color:var(--good)">Utilidad (renta objetivo)</span>
+      <span class="resumen-grupo-total" style="color:var(--good)">
+        <span id="sRenta">$0</span>
+        <span class="resumen-grupo-pct" id="sRentaPct">0%</span>
+      </span>
+    </div>
+    <div class="resumen-bar renta"><div id="sRentaBar" style="width:0%"></div></div>
+    <div class="resumen-item">
+      <span class="label" id="sRentaDet">15% USD sobre capital</span>
+      <span class="vals"></span>
+    </div>
+  </div>
+
+  <!-- Resultado final -->
+  <div class="resumen-head">
+    <div class="resumen-fact">
+      <span class="lbl">Ingreso neto del plan</span>
+      <span id="sNeto" style="color:var(--good)">$0</span>
+    </div>
+    <div class="resumen-fact">
+      <span class="lbl">Ingreso necesario</span>
+      <span id="sNecesario" style="color:var(--accent)">$0</span>
+    </div>
+    <div class="resumen-fact total">
+      <span class="lbl">Diferencia</span>
+      <span id="sGap">$0</span>
+    </div>
+  </div>
+
+  <div class="resumen-nota">
+    Los % son sobre la facturación bruta (estado de resultados estándar).
+  </div>
+
+</section>
+
+
+<!-- (pestaña Sensibilidad eliminada) -->
+
+
+</main>
+
+<script>
+// ============ DEFAULTS ============
+const DEFAULTS = {
+  // Inversión y renta
+  capital: 315000000,
+  tc: 1400,
+  renta: 15,
+
+  // Crédito (modo se guarda aparte)
+  creditoMonto: 0,
+  creditoTasa: 50,
+  creditoPlazo: 5,
+
+  // Costos variables
+  precioGasoil: 2100,
+  kmLitro: 2.5,
+  costoServicio: 1200000,
+  kmServicio: 30000,
+  neumDir: 2800000,
+  neumTrac: 22000000,
+  vidaGoma: 120000,
+  reparaciones: 10000000,
+  peajes: 3500000,
+  alojamiento: 2000000,
+  telefono: 500000,
+
+  // Personal
+  choferFijo: 2200000,
+  choferPct: 10,
+  choferMixFijo: 1200000,
+  choferMixPct: 5,
+  adminFijo: 400000,
+
+  // Fijos
+  seguro: 15000000,
+  patente: 4700000,
+  vtv: 261906,
+
+  // Amortización
+  residual: 120000000,
+  vidaUtil: 7,
+  inflaUSD: 3,
+
+  // Viajes
+  toneladas: 30,
+  kmA: 80, retornoA: 100, pctA: 100,
+  kmB: 500, retornoB: 100, pctB: 73,
+  kmC: 500, retornoC: 100, pctC: 85,
+};
+
+// Clave FIJA: no cambia entre versiones para que los valores cargados persistan
+// cuando actualices la app. El merge con DEFAULTS garantiza que campos nuevos
+// en futuras versiones tomen su valor por defecto sin romper nada.
+const STORAGE_KEY = 'fletes_app_user';
+const APP_VERSION = 'v38';
+
+// Modos no numéricos (se guardan aparte)
+let credModo = 'none';       // 'none' | 'ars' | 'usd'
+let choferModo = 'fijo';     // 'fijo' | 'pct' | 'mix'
+
+// Estado de viajes
+// - manualOverride=false: la app calcula plan equilibrado (caso inicial, y cada vez que cambia un costo/tarifa)
+// - manualOverride=true: el usuario movió un slider, la app respeta esas cantidades hasta que vuelva a cambiar un costo
+let viajes = { a: 0, b: 0, c: 0 };
+let manualOverride = false;
+// Cuando se cambia algo específico de un solo tipo (kmA, retornoA, pctA, etc.),
+// el render debe AJUSTAR SOLO la cantidad de ese tipo, sin tocar los otros.
+// Válido solo para 1 render; se resetea después de aplicarse.
+let ajusteTipo = null;
+
+// ============ TABLA CATAC ============
+const TARIFA_CATAC = {
+  1:9636.69,10:9636.69,20:12103.99,30:14616.30,40:16356.13,50:18223.50,60:19785.85,70:21438.23,80:23205.57,90:25112.93,
+  100:27192.78,110:28507.65,120:29837.56,130:31194.92,140:32572.30,150:33974.73,160:35404.56,170:36864.48,180:38351.84,190:39874.22,
+  200:41426.61,210:42873.95,220:44346.33,230:45848.74,240:47373.63,250:48928.49,260:50515.83,270:52130.69,280:53783.06,290:55472.96,
+  300:57202.78,310:58505.18,320:59812.55,330:61124.96,340:62452.35,350:63779.74,360:65122.12,370:66469.53,380:67821.92,390:69189.29,
+  400:70559.18,410:71521.61,420:72484.04,430:73441.49,440:74403.86,450:75361.31,460:76323.74,470:77281.13,480:78243.56,490:79201.01,
+  500:80160.92,510:80763.36,520:81358.31,530:81945.77,540:82525.73,550:83098.14,560:83663.12,570:84223.06,580:84778.03,590:85325.50,
+  600:85865.43,610:86400.38,620:86927.83,630:87452.83,640:87965.23,650:88477.72,660:88980.18,670:89480.12,680:89972.58,690:90460.05,
+  700:90942.50,710:91674.94,720:92399.90,730:93122.33,740:93839.79,750:94549.70,760:95257.15,770:95959.63,780:96654.55,790:97347.02,
+  800:98034.45,810:98566.88,820:99096.85,830:99624.31,840:100144.27,850:100661.72,860:101179.17,870:101689.12,880:102196.62,890:102701.54,
+  900:103201.49,910:103696.46,920:104188.91,930:104678.90,940:105166.32,950:105651.28,960:106131.27,970:106608.73,980:107081.17,990:107551.14,
+  1000:108021.12,1050:110918.36,1100:113628.16,1150:116212.94,1200:118682.75
+};
+
+function tarifaCatac(km){
+  if(km<=0) return 0;
+  if(km<=10) return TARIFA_CATAC[10];
+  if(km>=1200) return TARIFA_CATAC[1200];
+  const keys = Object.keys(TARIFA_CATAC).map(Number).sort((a,b)=>a-b);
+  for(let i=0;i<keys.length-1;i++){
+    if(keys[i]<=km && km<=keys[i+1]){
+      const lo=keys[i], hi=keys[i+1];
+      const frac=(km-lo)/(hi-lo);
+      return TARIFA_CATAC[lo]+frac*(TARIFA_CATAC[hi]-TARIFA_CATAC[lo]);
+    }
+  }
+  return TARIFA_CATAC[keys[keys.length-1]];
+}
+
+// ============ STATE ============
+let state = loadState();
+function loadState(){
+  try{
+    // 1) Intentar cargar la clave fija actual
+    let raw = localStorage.getItem(STORAGE_KEY);
+
+    // 2) Si no hay nada en la clave nueva, buscar claves viejas (versiones anteriores)
+    //    para migrar los datos que tenía el usuario
+    if(!raw){
+      const clavesViejas = [
+        'fletes_app_v18','fletes_app_v17','fletes_app_v16','fletes_app_v15',
+        'fletes_app_v14','fletes_app_v13','fletes_app_v12','fletes_app_v11',
+        'fletes_app_v10','fletes_app_v9','fletes_app_v8'
+      ];
+      for(const k of clavesViejas){
+        const v = localStorage.getItem(k);
+        if(v){
+          raw = v;
+          // Migrar a la nueva clave y limpiar la vieja
+          localStorage.setItem(STORAGE_KEY, raw);
+          try { localStorage.removeItem(k); } catch(e){}
+          break;
+        }
+      }
+    }
+
+    if(raw){
+      const p = JSON.parse(raw);
+      if(p._credModo) credModo = p._credModo;
+      if(p._choferModo) choferModo = p._choferModo;
+      if(p._viajes && p._manualOverride){
+        viajes = p._viajes;
+        manualOverride = true;
+      }
+      // Merge con DEFAULTS: campos nuevos toman su default,
+      // pero los valores del usuario se preservan
+      return {...DEFAULTS, ...p};
+    }
+  }catch(e){}
+  return {...DEFAULTS};
+}
+function saveState(){
+  try{
+    const toSave = {
+      ...state,
+      _credModo: credModo,
+      _choferModo: choferModo,
+      _manualOverride: manualOverride,
+      _viajes: manualOverride ? viajes : null,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+  }catch(e){}
+}
+
+// ============ FORMAT ============
+const fmt = n => isFinite(n) ? Math.round(n).toLocaleString('es-AR') : '0';
+const fmtD = (n,d=1) => isFinite(n) ? n.toLocaleString('es-AR',{minimumFractionDigits:d,maximumFractionDigits:d}) : '0,0';
+const $ = id => document.getElementById(id);
+
+// ============ CÁLCULO ============
+// calc() recibe dos valores iterativos:
+//   - ingMes: ingreso bruto mensual estimado (para chofer con % o mix)
+//   - kmPlanEstimado: km anuales del plan (para repartir costos anuales como reparaciones, peajes)
+// Iteramos 3 veces en render() para estabilizar estas dos interdependencias.
+function calc(ingresoBrutoMensualEstimado, kmPlanEstimado, overrideState){
+  const s = overrideState || state;
+  const ingMes = ingresoBrutoMensualEstimado || 0;
+  const kmPlan = kmPlanEstimado || 120000; // fallback sólo para primera pasada
+
+  // ---- Capital propio = capital total - crédito ----
+  // Si hay crédito activo, el capital propio es lo que vos pusiste de tu plata.
+  // Renta objetivo y amortización se calculan SOLO sobre capital propio
+  // (porque la cuota del crédito ya cubre la devolución del banco).
+  const creditoARS = (credModo === 'usd') ? (s.creditoMonto || 0) * (s.tc || 0) : (s.creditoMonto || 0);
+  const creditoActivo = credModo !== 'none' && s.creditoMonto > 0;
+  const capitalPropio = Math.max(0, s.capital - (creditoActivo ? creditoARS : 0));
+  const capitalPropioUSD = capitalPropio / (s.tc || 1);
+
+  // ---- Renta objetivo (solo sobre capital propio) ----
+  const capitalUSD = s.capital / (s.tc || 1);  // capital total (para mostrar)
+  const rentaUSD = capitalPropioUSD * s.renta / 100;
+  const rentaARS = rentaUSD * s.tc;
+
+  // ---- Crédito ----
+  let cuotaAnualARS = 0;
+  let cuotaMensualARS = 0;
+  if(credModo !== 'none' && s.creditoMonto > 0 && s.creditoPlazo > 0 && s.creditoTasa > 0){
+    const i = s.creditoTasa / 100;
+    const n = s.creditoPlazo;
+    const factor = Math.pow(1 + i, n);
+    const cuotaAnual = s.creditoMonto * i * factor / (factor - 1);
+    const tcFactor = credModo === 'usd' ? s.tc : 1;
+    cuotaAnualARS = cuotaAnual * tcFactor;
+    cuotaMensualARS = cuotaAnualARS / 12;
+  }
+
+  // ---- Variables por km ----
+  const combKm = s.kmLitro > 0 ? s.precioGasoil / s.kmLitro : 0;
+  const lubKm = s.kmServicio > 0 ? s.costoServicio / s.kmServicio : 0;
+  const neumKm = s.vidaGoma > 0 ? ((s.neumDir||0) + (s.neumTrac||0)) / s.vidaGoma : 0;
+  // Reparaciones + peajes + otros se reparten en los km REALES del plan
+  const repOtrosAnual = (s.reparaciones||0) + (s.peajes||0) + (s.alojamiento||0) + (s.telefono||0);
+  const repKm = kmPlan > 0 ? repOtrosAnual / kmPlan : 0;
+  const varKm = combKm + lubKm + neumKm + repKm;
+
+  // ---- Personal ----
+  let choferMes = 0;
+  if(choferModo === 'fijo'){
+    choferMes = s.choferFijo || 0;
+  } else if(choferModo === 'pct'){
+    choferMes = ingMes * ((s.choferPct || 0) / 100);
+  } else { // mix
+    choferMes = (s.choferMixFijo || 0) + ingMes * ((s.choferMixPct || 0) / 100);
+  }
+  const choferAnio = choferMes * 13;
+  const adminMes = s.adminFijo || 0;
+  const adminAnio = adminMes * 13;
+  const personalAnio = choferAnio + adminAnio;
+
+  // ---- Seguros + imp ----
+  const segImp = (s.seguro||0) + (s.patente||0) + (s.vtv||0);
+
+  // ---- Fijos totales (sin crédito ni renta) ----
+  const fijosAnual = personalAnio + segImp;
+
+  // ---- Amortización POR REPOSICIÓN (sobre el valor TOTAL del camión) ----
+  // Calcula cuánto hay que guardar todos los años para reemplazar el camión al año X.
+  // Enfoque económico estándar: la amortización refleja la pérdida de valor del activo completo,
+  // independientemente de cómo se financió. La cuota del crédito es un ítem financiero
+  // separado (cubre intereses + devolución del capital prestado).
+  // 1. Proyectamos el valor de reposición al año X: capital × (1 + inflaUSD)^años
+  // 2. El residual se mantiene a valor nominal (es lo que vale el usado al final).
+  // 3. (Valor reposición total - Residual) / vida útil = amortización anual necesaria.
+  const inflaFactor = Math.pow(1 + (s.inflaUSD || 0) / 100, s.vidaUtil || 0);
+  const valorReposicionTotal = s.capital * inflaFactor;      // Valor del camión 0km al año X
+  const residualTotal = s.residual || 0;
+  const amortAnual = s.vidaUtil > 0 ? (valorReposicionTotal - residualTotal) / s.vidaUtil : 0;
+
+  // ---- Ingreso objetivo ----
+  const ingresoObjetivo = fijosAnual + amortAnual + cuotaAnualARS + rentaARS;
+
+  // ---- Ingresos por tipo de viaje ----
+  const viajeData = (km, retorno, pct) => {
+    const kmTot = km * (1 + retorno/100);
+    const tarifa = tarifaCatac(km);
+    const bruto = tarifa * s.toneladas * (pct/100);
+    const costoVar = kmTot * varKm;
+    const neto = bruto - costoVar;
+    return { kmTot, tarifa, bruto, costoVar, neto };
+  };
+  const vA = viajeData(s.kmA, s.retornoA, s.pctA);
+  const vB = viajeData(s.kmB, s.retornoB, s.pctB);
+  const vC = viajeData(s.kmC, s.retornoC, s.pctC);
+
+  return {
+    capitalUSD, capitalPropio, capitalPropioUSD, creditoARS, creditoActivo,
+    rentaUSD, rentaARS,
+    cuotaAnualARS, cuotaMensualARS,
+    combKm, lubKm, neumKm, repKm, varKm,
+    choferMes, choferAnio, adminMes, adminAnio, personalAnio,
+    segImp, fijosAnual, amortAnual,
+    valorReposicionTotal, residualTotal,
+    ingresoObjetivo,
+    vA, vB, vC,
+  };
+}
+
+// ============ RESOLVER MIX ============
+// Si manualOverride=false: calcula plan equilibrado (1/3 del objetivo por tipo)
+// Si manualOverride=true: respeta los viajes que vos ajustaste a mano
+function resolverViajes(r, ajusteTipoLocal){
+  const obj = r.ingresoObjetivo;
+  const nA = r.vA.neto, nB = r.vB.neto, nC = r.vC.neto;
+  const netoPorTipo = { a: nA, b: nB, c: nC };
+
+  if(ajusteTipoLocal){
+    // Modo "ajuste solo un tipo": mantengo los otros 2 fijos y recalculo
+    // la cantidad del tipo ajustado para que el plan cumpla el objetivo.
+    const t = ajusteTipoLocal; // 'a' | 'b' | 'c'
+    const otros = ['a','b','c'].filter(x => x !== t);
+    // Aporte que generan los OTROS 2 tipos con sus cantidades actuales
+    const aporteOtros =
+      viajes[otros[0]] * netoPorTipo[otros[0]] +
+      viajes[otros[1]] * netoPorTipo[otros[1]];
+    // Lo que falta cubrir con el tipo ajustado
+    const faltante = obj - aporteOtros;
+    const netoDelTipo = netoPorTipo[t];
+    if(netoDelTipo > 0 && faltante > 0){
+      // Redondeo: preferimos que cubra o sobre un poco antes que quedar corto
+      viajes[t] = Math.max(0, Math.round(faltante / netoDelTipo));
+    } else if(netoDelTipo <= 0){
+      // Tipo no rentable con la nueva tarifa → 0 viajes (semáforo avisará)
+      viajes[t] = 0;
+    } else {
+      // No hace falta aporte de este tipo (los otros ya superan el objetivo)
+      viajes[t] = 0;
+    }
+  } else if(!manualOverride){
+    // Plan equilibrado: cada tipo aporta 1/3 del objetivo
+    const aOK = nA > 0, bOK = nB > 0, cOK = nC > 0;
+    const rent = [aOK, bOK, cOK].filter(Boolean).length;
+    if(rent === 0){
+      viajes = { a: 0, b: 0, c: 0 };
+    } else {
+      const porTipo = obj / rent;
+      viajes.a = aOK ? Math.round(porTipo / nA) : 0;
+      viajes.b = bOK ? Math.round(porTipo / nB) : 0;
+      viajes.c = cOK ? Math.round(porTipo / nC) : 0;
+    }
+  }
+  // Si manualOverride=true y no hay ajusteTipo: respetamos lo que ya hay en viajes
+
+  const kmPlan = viajes.a * r.vA.kmTot + viajes.b * r.vB.kmTot + viajes.c * r.vC.kmTot;
+  const ingresoReal = viajes.a * nA + viajes.b * nB + viajes.c * nC;
+  const ingresoBrutoPlan = viajes.a * r.vA.bruto + viajes.b * r.vB.bruto + viajes.c * r.vC.bruto;
+  const costoVarPlan = kmPlan * r.varKm;
+  const gap = ingresoReal - obj;
+
+  return {
+    viajesA: viajes.a, viajesB: viajes.b, viajesC: viajes.c,
+    aRentable: nA > 0, bRentable: nB > 0, cRentable: nC > 0,
+    kmPlan, ingresoReal, ingresoBrutoPlan, costoVarPlan, gap,
+  };
+}
+
+// ============ RENDER ============
+function render(){
+  // Capturar ajusteTipo al inicio y consumirlo al final.
+  // Así ambas pasadas del cálculo ven el mismo valor.
+  const ajusteLocal = ajusteTipo;
+
+  // 2 pasadas de cálculo para estabilizar dos valores circulares:
+  //   - kmPlan (afecta repKm) depende de los viajes actuales
+  //   - ingMes (afecta sueldo chofer % o mix) depende del ingreso bruto
+  // Pasada 1: valores iniciales aproximados
+  let r = calc(0, 120000);
+  let v = resolverViajes(r, ajusteLocal);
+  // Pasada 2: recalcular con valores reales del plan
+  const ingMes = v.ingresoBrutoPlan / 12;
+  r = calc(ingMes, v.kmPlan);
+  v = resolverViajes(r, ajusteLocal);
+
+  // Consumir el flag después de las 2 pasadas.
+  // Si hubo ajuste de tipo, activamos manualOverride para que los siguientes
+  // renders (por cambios generales) NO sobrescriban el plan recién ajustado.
+  if(ajusteLocal){
+    manualOverride = true;
+    ajusteTipo = null;
+  }
+
+  // ===== COSTOS =====
+  $('oCapUSD').textContent = 'US$ ' + fmt(r.capitalUSD);
+
+  // Mostrar capital propio solo si hay crédito activo
+  const rowCapPropio = $('rowCapPropio');
+  if(r.creditoActivo && r.creditoARS > 0){
+    rowCapPropio.style.display = '';
+    $('oCapPropio').textContent = 'US$ ' + fmt(r.capitalPropioUSD);
+    $('oRentaDet').textContent = 'sobre capital propio (US$ ' + fmt(r.capitalPropioUSD) + ')';
+  } else {
+    rowCapPropio.style.display = 'none';
+    $('oRentaDet').textContent = 'sobre capital total (US$ ' + fmt(r.capitalUSD) + ')';
+  }
+  $('oRentaAnio').textContent = 'US$ ' + fmt(r.rentaUSD) + '  ·  $ ' + fmt(r.rentaARS);
+
+  $('oCuotaMes').textContent = '$' + fmt(r.cuotaMensualARS);
+  $('oCuotaAnual').textContent = '$' + fmt(r.cuotaAnualARS);
+
+  $('oCombKm').textContent = '$' + fmt(r.combKm) + ' /km';
+  $('oLubKm').textContent = '$' + fmt(r.lubKm) + ' /km';
+  $('oNeumKm').textContent = '$' + fmt(r.neumKm) + ' /km';
+  $('oRepKm').textContent = '$' + fmt(r.repKm) + ' /km';
+  $('oVarKm').textContent = '$' + fmt(r.varKm) + ' /km';
+  $('sumVar').textContent = '$' + fmt(r.varKm) + '/km';
+
+  $('oChoferMes').textContent = '$' + fmt(r.choferMes);
+  $('oChoferAnio').textContent = '$' + fmt(r.choferAnio);
+  $('oAdminAnio').textContent = '$' + fmt(r.adminAnio);
+  $('oPersAnio').textContent = '$' + fmt(r.personalAnio);
+  $('sumPers').textContent = '$' + fmt(r.personalAnio) + '/año';
+  $('sumFij').textContent = '$' + fmt(r.segImp) + '/año';
+  $('oAmort').textContent = '$' + fmt(r.amortAnual);
+  $('oRepos').textContent = '$' + fmt(r.valorReposicionTotal);
+  $('oReposDet').textContent = 'al año ' + (state.vidaUtil || 0) + ' con ' + (state.inflaUSD || 0) + '% USD anual';
+
+  // ===== PANEL =====
+  $('rNecesario').textContent = '$' + fmt(r.ingresoObjetivo);
+  $('rNeto').textContent = '$' + fmt(v.ingresoReal);
+
+  // Sello de tarifa según % CATAC
+  const sello = (pct) => {
+    if(pct === 100) return 'CATAC full';
+    const diff = pct - 100;
+    const signo = diff > 0 ? '+' : '';
+    return 'CATAC ' + signo + diff + '%';
+  };
+  $('tarA').textContent = sello(state.pctA);
+  $('tarB').textContent = sello(state.pctB);
+  $('tarC').textContent = sello(state.pctC);
+
+  // Ajuste de tarifa visual (pestaña Viajes): muestra +N / -N / +0
+  ['A','B','C'].forEach(L => {
+    const diff = (state['pct'+L] || 100) - 100;
+    const el = $('aj'+L);
+    const help = $('aj'+L+'help');
+    if(!el || !help) return;
+    const signo = diff > 0 ? '+' : (diff < 0 ? '' : '+');
+    el.textContent = signo + diff;
+    el.className = 'ajuste-tarifa-value ' + (diff > 0 ? 'pos' : diff < 0 ? 'neg' : 'zero');
+    help.textContent = diff === 0 ? 'CATAC full' : 'CATAC ' + (diff > 0 ? '+' : '') + diff + '%';
+  });
+
+  // Inputs numéricos (sin focus para no robar cursor si el usuario está escribiendo)
+  const setCount = (id, val) => {
+    const el = $(id);
+    if(document.activeElement !== el) el.value = val;
+  };
+  setCount('countA', v.viajesA);
+  setCount('countB', v.viajesB);
+  setCount('countC', v.viajesC);
+
+  // Neto por viaje (lo que deja limpio cada viaje) y aporte total por tipo
+  // netoA/B/C: lo que queda después de pagar costo variable. No descuenta fijos
+  // (los fijos son generales, no atribuibles a un viaje puntual).
+  const aportes = {
+    A: v.viajesA * r.vA.neto,
+    B: v.viajesB * r.vB.neto,
+    C: v.viajesC * r.vC.neto,
+  };
+  const totalAportes = aportes.A + aportes.B + aportes.C;
+  const pctAporte = n => totalAportes > 0 ? fmtD((n/totalAportes)*100, 0) + '%' : '0%';
+
+  $('netoA').textContent = '$' + fmt(r.vA.neto);
+  $('netoB').textContent = '$' + fmt(r.vB.neto);
+  $('netoC').textContent = '$' + fmt(r.vC.neto);
+  $('aporteA').textContent = '$' + fmt(aportes.A);
+  $('aporteB').textContent = '$' + fmt(aportes.B);
+  $('aporteC').textContent = '$' + fmt(aportes.C);
+  $('aportePctA').textContent = '(' + pctAporte(aportes.A) + ')';
+  $('aportePctB').textContent = '(' + pctAporte(aportes.B) + ')';
+  $('aportePctC').textContent = '(' + pctAporte(aportes.C) + ')';
+
+  // Tarifa ajustada y km totales (dentro del bloque avanzado del engranaje)
+  // Tarifa ajustada = tarifa CATAC × (pct/100) → lo que efectivamente cobrás por tonelada
+  $('tarAjA').textContent = '$' + fmt(r.vA.tarifa * (state.pctA / 100));
+  $('tarAjB').textContent = '$' + fmt(r.vB.tarifa * (state.pctB / 100));
+  $('tarAjC').textContent = '$' + fmt(r.vC.tarifa * (state.pctC / 100));
+  $('kmTotA').textContent = fmt(r.vA.kmTot);
+  $('kmTotB').textContent = fmt(r.vB.kmTot);
+  $('kmTotC').textContent = fmt(r.vC.kmTot);
+
+  const totViajes = v.viajesA + v.viajesB + v.viajesC;
+  $('totalViajes').textContent = fmt(totViajes);
+  $('totalKmHeader').textContent = fmt(v.kmPlan) + ' km';
+
+  // Totalizador año/mes/semana
+  $('totAnio').textContent = fmt(totViajes);
+  $('totMes').textContent = fmtD(totViajes/12, 1);
+  $('totSem').textContent = fmtD(totViajes/52, 1);
+  $('totKmAnio').textContent = fmt(v.kmPlan) + ' km';
+  $('totKmMes').textContent = fmt(Math.round(v.kmPlan/12)) + ' km';
+  $('totKmSem').textContent = fmt(Math.round(v.kmPlan/52)) + ' km';
+  $('totAanio').textContent = fmt(v.viajesA);
+  $('totBanio').textContent = fmt(v.viajesB);
+  $('totCanio').textContent = fmt(v.viajesC);
+  $('totAmes').textContent = fmtD(v.viajesA/12, 1);
+  $('totBmes').textContent = fmtD(v.viajesB/12, 1);
+  $('totCmes').textContent = fmtD(v.viajesC/12, 1);
+  $('totAsem').textContent = fmtD(v.viajesA/52, 1);
+  $('totBsem').textContent = fmtD(v.viajesB/52, 1);
+  $('totCsem').textContent = fmtD(v.viajesC/52, 1);
+
+  // Sugerencia de tarifa: SOLO mostrar cuando la tarifa es tan baja que se pierde plata
+  // (neto por viaje es negativo = no cubre ni el costo variable).
+  // Si el neto es positivo, no mostrar nada — la info está en "Cada viaje te deja $X limpios"
+  const sugerencia = (letra, vd, cantidad) => {
+    const el = $('sug' + letra);
+    if(!el) return;
+    if(vd.neto < 0 && cantidad > 0){
+      const perdida = Math.abs(vd.neto);
+      el.textContent = '⚠ Con esta tarifa perdés $' + fmt(perdida) + ' por viaje';
+      el.className = 'viaje-suggest warn';
+      el.style.display = 'block';
+    } else {
+      el.style.display = 'none';
+    }
+  };
+  sugerencia('A', r.vA, v.viajesA);
+  sugerencia('B', r.vB, v.viajesB);
+  sugerencia('C', r.vC, v.viajesC);
+
+  // ===== RESUMEN (estado de resultados) =====
+  // Base para los %: facturación bruta del plan
+  // Si el plan está vacío (0 viajes), usamos el ingreso necesario como referencia
+  const base = v.ingresoBrutoPlan > 0 ? v.ingresoBrutoPlan : r.ingresoObjetivo;
+  const pct = n => base > 0 ? ((n / base) * 100) : 0;
+  const pctFmt = n => fmtD(pct(n), 1) + '%';
+
+  // Costos variables del plan (por km recorridos)
+  const sCombPlan = v.kmPlan * r.combKm;
+  const sLubPlan = v.kmPlan * r.lubKm;
+  const sNeumPlan = v.kmPlan * r.neumKm;
+  const sRepPlan = v.kmPlan * r.repKm;
+  const sVarTotalPlan = sCombPlan + sLubPlan + sNeumPlan + sRepPlan;
+
+  // ===== BLOQUE COSTOS POR KM =====
+  // 1) Costo variable / km → r.varKm (solo operativos: gasoil, gomas, etc.)
+  // 2) Costo total / km = (variables del plan + fijos + amort + cuota + renta) / km del plan
+  //    Esto da lo que CUESTA rodar cada km con TODO incluido (incluso ganancia del dueño).
+  // 3) Ingreso promedio / km = facturación / km del plan
+  // Margen = ingreso - costo total. Si es positivo, ganás plata por km.
+  const costoVariableKm = r.varKm;
+  const costoTotalAnual = sVarTotalPlan + r.fijosAnual + r.amortAnual + r.cuotaAnualARS + r.rentaARS;
+  const costoTotalKm = v.kmPlan > 0 ? costoTotalAnual / v.kmPlan : 0;
+  const ingresoKm = v.kmPlan > 0 ? v.ingresoBrutoPlan / v.kmPlan : 0;
+  const margenKm = ingresoKm - costoTotalKm;
+  const margenPct = costoTotalKm > 0 ? (margenKm / costoTotalKm) * 100 : 0;
+
+  $('kmVar').textContent = '$' + fmt(costoVariableKm) + ' /km';
+  $('kmTotal').textContent = '$' + fmt(costoTotalKm) + ' /km';
+  $('kmIngreso').textContent = '$' + fmt(ingresoKm) + ' /km';
+  $('kmMargen').textContent = (margenKm >= 0 ? '+' : '−') + '$' + fmt(Math.abs(margenKm)) + ' /km';
+  $('kmMargenPct').textContent = (margenKm >= 0 ? '+' : '') + fmtD(margenPct, 1) + '% sobre costo total';
+  const kmMargenRow = $('kmMargenRow');
+  kmMargenRow.className = 'km-row margen' + (margenKm < 0 ? ' neg' : '');
+
+  // Explicación textual
+  const kmExp = $('kmExplicacion');
+  if(v.kmPlan <= 0){
+    kmExp.textContent = '— Cargá algún viaje en el Panel para ver estos ratios.';
+  } else if(margenKm > 10){
+    kmExp.textContent = '✓ Cobrás más por km de lo que te cuesta: el negocio da.';
+  } else if(margenKm >= -10 && margenKm <= 10){
+    kmExp.textContent = '⚠ Empatado: cubrís costos pero no sobra para imprevistos.';
+  } else {
+    kmExp.textContent = '✗ Perdés plata por cada km: la tarifa no cubre el costo total.';
+  }
+
+  // Cabecera
+  $('sFacturacion').textContent = '$' + fmt(v.ingresoBrutoPlan);
+  $('sKmPlan').textContent = fmt(v.kmPlan) + ' km';
+  $('sTotalViajes').textContent = fmt(v.viajesA + v.viajesB + v.viajesC);
+
+  // Variables
+  $('sVarTotal').textContent = '$' + fmt(sVarTotalPlan);
+  $('sVarPct').textContent = pctFmt(sVarTotalPlan);
+  $('sVarBar').style.width = Math.min(100, pct(sVarTotalPlan)) + '%';
+  $('sComb').textContent = '$' + fmt(sCombPlan);
+  $('sCombPct').textContent = pctFmt(sCombPlan);
+  $('sNeum').textContent = '$' + fmt(sNeumPlan);
+  $('sNeumPct').textContent = pctFmt(sNeumPlan);
+  $('sLub').textContent = '$' + fmt(sLubPlan);
+  $('sLubPct').textContent = pctFmt(sLubPlan);
+  $('sRep').textContent = '$' + fmt(sRepPlan);
+  $('sRepPct').textContent = pctFmt(sRepPlan);
+
+  // Fijos
+  $('sFijTotal').textContent = '$' + fmt(r.fijosAnual);
+  $('sFijPct').textContent = pctFmt(r.fijosAnual);
+  $('sFijBar').style.width = Math.min(100, pct(r.fijosAnual)) + '%';
+  $('sChofer').textContent = '$' + fmt(r.choferAnio);
+  $('sChoferPct').textContent = pctFmt(r.choferAnio);
+  $('sAdmin').textContent = '$' + fmt(r.adminAnio);
+  $('sAdminPct').textContent = pctFmt(r.adminAnio);
+  $('sSeg').textContent = '$' + fmt(state.seguro);
+  $('sSegPct').textContent = pctFmt(state.seguro);
+  $('sImp').textContent = '$' + fmt((state.patente || 0) + (state.vtv || 0));
+  $('sImpPct').textContent = pctFmt((state.patente || 0) + (state.vtv || 0));
+
+  // Recupero de capital
+  const recTotal = r.amortAnual + r.cuotaAnualARS;
+  $('sRecTotal').textContent = '$' + fmt(recTotal);
+  $('sRecPct').textContent = pctFmt(recTotal);
+  $('sRecBar').style.width = Math.min(100, pct(recTotal)) + '%';
+  $('sAmort').textContent = '$' + fmt(r.amortAnual);
+  $('sAmortPct').textContent = pctFmt(r.amortAnual);
+  $('sCred').textContent = '$' + fmt(r.cuotaAnualARS);
+  $('sCredPct').textContent = pctFmt(r.cuotaAnualARS);
+
+  // Renta objetivo
+  $('sRenta').textContent = '$' + fmt(r.rentaARS);
+  $('sRentaPct').textContent = pctFmt(r.rentaARS);
+  $('sRentaBar').style.width = Math.min(100, pct(r.rentaARS)) + '%';
+  const capRef = r.creditoActivo ? r.capitalPropioUSD : r.capitalUSD;
+  const capLbl = r.creditoActivo ? 'capital propio' : 'capital total';
+  $('sRentaDet').textContent = state.renta + '% USD sobre ' + capLbl + ' (US$ ' + fmt(capRef) + ')';
+
+  // Cierre
+  $('sNeto').textContent = '$' + fmt(v.ingresoReal);
+  $('sNecesario').textContent = '$' + fmt(r.ingresoObjetivo);
+  const gapSign = v.gap >= 0 ? '+' : '−';
+  $('sGap').textContent = gapSign + '$' + fmt(Math.abs(v.gap));
+  $('sGap').style.color = v.gap >= 0 ? 'var(--good)' : 'var(--danger)';
+
+  // Semáforo — 3 líneas: veredicto grande + detalle + hint
+  const sem = $('semaforo');
+  const semTitulo = $('semTitulo');
+  const semDetalle = $('semDetalle');
+  const semHint = $('semHint');
+  let titulo, detalle, hint, clase;
+  const algunoRent = v.aRentable || v.bRentable || v.cRentable;
+  const usaA = v.viajesA > 0, usaB = v.viajesB > 0, usaC = v.viajesC > 0;
+  const gapAbs = Math.abs(v.gap);
+  const tolerancia = r.ingresoObjetivo * 0.01; // 1% de margen → "cumple exacto"
+
+  // Ingreso neto promedio por km del plan actual (para estimar km equivalentes al gap)
+  const netoKmPromedio = v.kmPlan > 0 ? v.ingresoReal / v.kmPlan : 0;
+  const gapEnKm = netoKmPromedio > 0 ? Math.round(Math.abs(v.gap) / netoKmPromedio) : 0;
+  const kmFmt = (n) => n.toLocaleString('es-AR') + ' km';
+
+  if(!algunoRent){
+    titulo = '✗ PLAN NO VIABLE';
+    detalle = 'Ningún tipo de viaje es rentable';
+    hint = 'Revisá tarifas o costos';
+    clase = 'bad';
+  } else if(usaA && !v.aRentable){
+    titulo = '⚠ CORTO NO RENTABLE';
+    detalle = 'Esa tarifa no cubre ni el costo variable';
+    hint = 'Subí el % CATAC o sacá este tipo del plan';
+    clase = 'warn';
+  } else if(usaB && !v.bRentable){
+    titulo = '⚠ SALIDA DE PLANTA NO RENTABLE';
+    detalle = 'Esa tarifa no cubre ni el costo variable';
+    hint = 'Subí el % CATAC o sacá este tipo del plan';
+    clase = 'warn';
+  } else if(usaC && !v.cRentable){
+    titulo = '⚠ DIRECTO NO RENTABLE';
+    detalle = 'Esa tarifa no cubre ni el costo variable';
+    hint = 'Subí el % CATAC o sacá este tipo del plan';
+    clase = 'warn';
+  } else if(v.gap < -tolerancia){
+    titulo = '⚠ NO ALCANZA';
+    detalle = 'Te faltan $' + fmt(gapAbs) + ' al año';
+    hint = 'Equivale a rodar ' + kmFmt(gapEnKm) + ' más';
+    clase = 'warn';
+  } else if(v.gap > tolerancia){
+    titulo = '✓ CUMPLE OBJETIVO';
+    detalle = 'Sobran $' + fmt(gapAbs) + ' al año';
+    hint = 'Podrías rodar ' + kmFmt(gapEnKm) + ' menos';
+    clase = 'ok';
+  } else {
+    titulo = '✓ PLAN JUSTO';
+    detalle = 'Cubre exacto lo necesario';
+    hint = kmFmt(v.kmPlan) + ' al año';
+    clase = 'ok';
+  }
+
+  // Chequeos adicionales: si los km son demasiados, sobrescribe con warning
+  if(clase === 'ok' && v.kmPlan > 200000){
+    titulo = '⚠ DEMASIADOS KM';
+    detalle = kmFmt(v.kmPlan) + ' al año';
+    hint = 'Difícil de hacer con un solo chofer';
+    clase = 'warn';
+  } else if(clase === 'ok' && v.kmPlan > 140000){
+    hint = hint + ' · exige +120.000 km/año';
+    clase = 'warn';
+  }
+
+  semTitulo.textContent = titulo;
+  semDetalle.textContent = detalle;
+  semHint.textContent = hint;
+  sem.className = 'semaforo ' + clase;
+
+}
+
+// ============ UI: MODOS DE CRÉDITO ============
+function updateCredModo(){
+  // Botones activos
+  document.querySelectorAll('#credModo button').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === credModo);
+  });
+  // Mostrar/ocultar fields
+  $('credFields').style.display = credModo === 'none' ? 'none' : 'block';
+  // Prefix (USD o $)
+  $('credPrefix').textContent = credModo === 'usd' ? 'US$' : '$';
+}
+
+function updateChoferModo(){
+  document.querySelectorAll('#choferModo button').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === choferModo);
+  });
+  $('choferFijoBox').style.display = choferModo === 'fijo' ? 'block' : 'none';
+  $('choferPctBox').style.display = choferModo === 'pct' ? 'block' : 'none';
+  $('choferMixBox').style.display = choferModo === 'mix' ? 'block' : 'none';
+}
+
+// ============ BIND ============
+function bindInputs(){
+  for(const key of Object.keys(DEFAULTS)){
+    const el = $(key);
+    if(!el) continue;
+    el.value = state[key];
+    el.addEventListener('input', () => {
+      state[key] = parseFloat(el.value) || 0;
+      // Detectar si el cambio es específico de un tipo de viaje
+      // (kmA, kmB, kmC, retornoA, retornoB, retornoC, pctA, pctB, pctC)
+      const m = key.match(/^(km|retorno|pct)([ABC])$/);
+      if(m){
+        // Cambio específico de un tipo → ajustar SOLO ese tipo
+        ajusteTipo = m[2].toLowerCase();
+      } else {
+        // Cambio general → re-equilibrar los 3
+        manualOverride = false;
+        ajusteTipo = null;
+      }
+      saveState();
+      render();
+    });
+  }
+
+  // Botones +/- de los steppers
+  document.querySelectorAll('.stepper button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tipo = btn.dataset.tipo;
+      const dir = parseInt(btn.dataset.dir, 10);
+      viajes[tipo] = Math.max(0, (viajes[tipo] || 0) + dir);
+      manualOverride = true;
+      saveState();
+      render();
+    });
+  });
+
+  // Inputs numéricos: editar manualmente
+  ['A','B','C'].forEach(letra => {
+    const el = $('count' + letra);
+    if(!el) return;
+    const key = letra.toLowerCase();
+    el.addEventListener('input', () => {
+      viajes[key] = Math.max(0, parseInt(el.value, 10) || 0);
+      manualOverride = true;
+      saveState();
+      render();
+    });
+  });
+
+  // Botones +/- de ajuste de tarifa dentro de cada card del Panel
+  // Modifican el pctA/B/C absoluto (100+ajuste) y ajustan SOLO la cantidad de ese tipo
+  document.querySelectorAll('[data-ajuste]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tipo = btn.dataset.ajuste; // 'A' | 'B' | 'C'
+      const dir = parseInt(btn.dataset.dir, 10);
+      const key = 'pct' + tipo;
+      const valActual = state[key] || 100;
+      state[key] = Math.max(0, valActual + dir);
+      const input = $(key);
+      if(input) input.value = state[key];
+      // Ajustar solo ese tipo (no re-equilibrar todo)
+      ajusteTipo = tipo.toLowerCase();
+      saveState();
+      render();
+    });
+  });
+
+  // Botón engranaje ⚙️: abre/cierra el bloque avanzado con distancia + retorno
+  document.querySelectorAll('[data-gear]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tipo = btn.dataset.gear; // 'A' | 'B' | 'C'
+      const box = $('av' + tipo);
+      if(!box) return;
+      const isOpen = box.classList.toggle('open');
+      btn.classList.toggle('active', isOpen);
+    });
+  });
+
+  // Botón volver al plan equilibrado
+  $('btnReset').addEventListener('click', () => {
+    manualOverride = false;
+    saveState();
+    render();
+  });
+
+  // Modo crédito
+  document.querySelectorAll('#credModo button').forEach(b => {
+    b.addEventListener('click', () => {
+      credModo = b.dataset.mode;
+      updateCredModo();
+      manualOverride = false;
+      saveState();
+      render();
+    });
+  });
+
+  // Modo chofer
+  document.querySelectorAll('#choferModo button').forEach(b => {
+    b.addEventListener('click', () => {
+      choferModo = b.dataset.mode;
+      updateChoferModo();
+      manualOverride = false;
+      saveState();
+      render();
+    });
+  });
+}
+
+function switchTab(name){
+  document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('main > section').forEach(s => s.classList.toggle('active', s.id === name));
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+$('tabs').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if(b) switchTab(b.dataset.tab);
+});
+
+// ============ INIT ============
+updateCredModo();
+updateChoferModo();
+bindInputs();
+render();
+
+// Registrar Service Worker (PWA offline)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(e => console.log('SW:', e));
+  });
+}
+</script>
+
+</body>
+</html>
